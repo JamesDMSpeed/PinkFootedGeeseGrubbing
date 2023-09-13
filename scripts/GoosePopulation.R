@@ -21,5 +21,6 @@ ggplot(data=goosepopdat1,aes(x=year,y=mean))+geom_line()+
   xlab("Year")+ylab("Population")+
   geom_vline(xintercept=2013)+
   geom_vline(xintercept=2006,lty=2)
-  
+
+write.csv(goosepopdat1,"data/goosepop_simple.csv")  
   
