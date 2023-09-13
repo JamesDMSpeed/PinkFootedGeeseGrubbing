@@ -23,8 +23,7 @@ plotsperyear<-grubbingdat %>% group_by(Year) %>% summarise(count=n())
 
 ggplot(data=plotsperyear,aes(x=Year,y=count))+geom_line()
 
-
-grubbingintensity<-grubbingdat[grubbingdat$Year!=2011,] %>% group_by(Year,Location_Valley,VegetationType_reclassified,GoosePop_mean) %>% summarise(meangrubint=mean(Grubbing_Intensity))
+grubbingintensity<-grubbingdat %>% group_by(Year,Location_Valley,VegetationType_reclassified,GoosePop_mean) %>% summarise(meangrubint=mean(Grubbing_Intensity))
 grubbingproportion<-grubbingdat %>% group_by(Year,Location_Valley,VegetationType_reclassified,GoosePop_mean) %>% summarise(prop=sum(Grubbing_PresenceAbsence)/n())                                                                               
 
 #Plots by time
@@ -48,3 +47,37 @@ plot_grid(gLg,gPg,align="v",axis='lr',nrow=2)
 
 
 
+#Simple glm
+glm1<-glm(data=grubbingproportion,prop~GoosePop_mean*VegetationType_reclassified,family="binomial")
+summary(glm1)
+anova(glm1,test="Chisq")
+
+glm2<-glm(data=grubbingdat,Grubbing_PresenceAbsence~GoosePop_mean*VegetationType_reclassified,family="binomial",offset=SpatialScale_GrubbingRecording)
+summary(glm2)
+
+
+#Very simple GLMM
+
+library(lme4)
+bin1<-glmer(data=grubbingdat,Grubbing_PresenceAbsence~GoosePop_mean*VegetationType_reclassified+1|Location_Valley,family = "binomial")
+library(glmmTMB)
+
+tmb1<-glmmTMB(Grubbing_PresenceAbsence~GoosePop_mean*VegetationType_reclassified + offset(SpatialScale_GrubbingRecording)+(1|Location_Valley)+(GoosePop_mean|Location_Valley), data=grubbingdat, ziformula=~0, family=binomial)
+summary(tmb1)
+
+library(DHARMa)
+
+tmb1_simres<-simulateResiduals(tmb1)
+plot(tmb1_simres)
+library(effects)
+effs<-allEffects(tmb1)
+effs
+plot(effs)
+library(car)
+Anova(tmb1)
+
+
+library(ggeffects)
+ggpredict(tmb1, terms = c("GoosePop_mean",'VegetationType_reclassified',"Location_Valley"), type = "re") %>% plot()
+ggeffect(tmb1, terms = c("GoosePop_mean",'VegetationType_reclassified')) %>% plot()
+  #geom_point(data=grubbingproportion,aes(x=GoosePop_mean,y=prop*100))
