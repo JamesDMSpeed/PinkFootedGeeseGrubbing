@@ -1,30 +1,52 @@
-#Svalbard grubbing analyses
+#Svalbard grubbing analyses: 2006 to 2022
+
+rm(list=ls())
+
+#Load libraries
 library(tidyverse)
 library(ggplot2)
+library(car)
+library(DHARMa)
+library(glmmTMB)
+library(effects)
+library(ggeffects)
 
 
-#file="https://npolar-my.sharepoint.com/:x:/r/personal/linn_voldstad_npolar_no/Documents/Grubbing_synthesis-Shared/Data_cleaned_forR/grubbing_plots_merged_prelim_1.csv?d=w1912586f83a7405eb379870cef5a7ce9&csf=1&web=1&e=ba202u&nav=MTVfezAwMDAwMDAwLTAwMDEtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMH0"
-#download.file(file,"data")
-
+#Load in pre-wrangeld data
 grubbingdat<-read.csv("data/grubbing_plots_merged_prelim_2.csv",header=T)
+grubbingdat<-grubbingdat[!is.na(grubbingdat$Year),]
 View(grubbingdat)
 
-#Add goose population estimates to year
+#Add goose population estimates - joining on year
 goosepop<-read.csv("data/goosepop_simple.csv",header=T)
 names(goosepop)[4:5]<-c("GoosePop_mean",'GoosePop_sd')
 grubbingdat<-left_join(grubbingdat,goosepop,join_by(Year==year))
 
-
+#CHeck number of observations per valley and year
 table(grubbingdat$Year,grubbingdat$Location_Valley)
-
 plotsperyearvalley<-grubbingdat %>% group_by(Year,Location_Valley) %>% summarise(count=n())
 plotsperyearvalley
+
+#Total per year
 plotsperyear<-grubbingdat %>% group_by(Year) %>% summarise(count=n())
+ggplot(data=plotsperyear,aes(x=Year,y=count))+geom_line()+geom_point()+theme_bw()+ylab("Number of grubbing observations")
+ggplot()+geom_col(data=plotsperyear,aes(x=Year,y=count))+theme_bw()+ylab("Number of grubbing observations")
 
-ggplot(data=plotsperyear,aes(x=Year,y=count))+geom_line()
 
-grubbingintensity<-grubbingdat %>% group_by(Year,Location_Valley,VegetationType_reclassified,GoosePop_mean) %>% summarise(meangrubint=mean(Grubbing_Intensity))
+ggplot(data=plotsperyearvalley,aes(x=Year,y=count,fill=Location_Valley))+geom_bar(position = "stack",stat="identity")+theme_bw()+ylab("Number of grubbing observations")
+
+
+#Frequency distribution of grubbing intensity
+ggplot(data=grubbingdat[grubbingdat$Grubbing_Intensity<=1.0 & grubbingdat$Grubbing_Intensity>0,])+geom_density(aes(x=Grubbing_Intensity,group=Year,color=Year),bw=0.1)+
+  theme_bw()
+
+
+#Grubbing intensity and extent - per year, valley and vegetation type
+
+#Extent (proportion of total observations with grubbing present)
 grubbingproportion<-grubbingdat %>% group_by(Year,Location_Valley,VegetationType_reclassified,GoosePop_mean) %>% summarise(prop=sum(Grubbing_PresenceAbsence)/n())                                                                               
+#Intensity (where grubbing is present, the % area of observation unit grubbed)
+grubbingintensity<-grubbingdat[grubbingdat$Grubbing_PresenceAbsence==1,] %>% group_by(Year,Location_Valley,VegetationType_reclassified,GoosePop_mean) %>% summarise(meangrubint=mean(Grubbing_Intensity))
 
 #Plots by time
 gP<-ggplot(data=grubbingintensity,aes(x=Year,y=meangrubint))+geom_point()+
@@ -46,38 +68,53 @@ gPg<-ggplot(data=grubbingintensity,aes(x=GoosePop_mean,y=meangrubint))+geom_poin
 plot_grid(gLg,gPg,align="v",axis='lr',nrow=2)
 
 
+#GLMMs
+#Grubbing extent
+#Binomial logitlink
+#Fitting offset against plot size, random slope (on goose pop) and intercept for valleys. No zero inflation. 
 
-#Simple glm
-glm1<-glm(data=grubbingproportion,prop~GoosePop_mean*VegetationType_reclassified,family="binomial")
-summary(glm1)
-anova(glm1,test="Chisq")
-
-glm2<-glm(data=grubbingdat,Grubbing_PresenceAbsence~GoosePop_mean*VegetationType_reclassified,family="binomial",offset=SpatialScale_GrubbingRecording)
-summary(glm2)
-
-
-#Very simple GLMM
-
-library(lme4)
-bin1<-glmer(data=grubbingdat,Grubbing_PresenceAbsence~GoosePop_mean*VegetationType_reclassified+1|Location_Valley,family = "binomial")
-library(glmmTMB)
-
-tmb1<-glmmTMB(Grubbing_PresenceAbsence~GoosePop_mean*VegetationType_reclassified + offset(SpatialScale_GrubbingRecording)+(1|Location_Valley)+(GoosePop_mean|Location_Valley), data=grubbingdat, ziformula=~0, family=binomial)
+tmb1<-glmmTMB(Grubbing_PresenceAbsence~GoosePop_mean*VegetationType_reclassified + offset(SpatialScale_GrubbingRecording)+(1|Location_Valley)+(GoosePop_mean|Location_Valley), data=grubbingdat, ziformula=~0, family=binomial(link='logit'))
 summary(tmb1)
 
-library(DHARMa)
-
+#Evaluation and visualisation
+#DHARMa residuals test
 tmb1_simres<-simulateResiduals(tmb1)
-plot(tmb1_simres)
-library(effects)
+plot(tmb1_simres) #Looks good
+
+#Anova test (Wald)
+Anova(tmb1) #Significant effect interaction between vegetation type and goose population
+
+#Visualising effects
 effs<-allEffects(tmb1)
 effs
 plot(effs)
-library(car)
-Anova(tmb1)
 
-
-library(ggeffects)
 ggpredict(tmb1, terms = c("GoosePop_mean",'VegetationType_reclassified',"Location_Valley"), type = "re") %>% plot()
 ggeffect(tmb1, terms = c("GoosePop_mean",'VegetationType_reclassified')) %>% plot()
+
+
+ge1<-ggeffect(tmb1, terms = c("GoosePop_mean",'VegetationType_reclassified'))
   #geom_point(data=grubbingproportion,aes(x=GoosePop_mean,y=prop*100))
+
+#Intensity
+#No offset? 
+#Random intercept and slope on goose population for valleys.
+#Only locations where grubbing occurred (i.e. not grubbing absences)
+#Ordered beta regression family
+#Kubinec R (2022). "Ordered Beta Regression: A Parsimonious, Well-Fitting Model for Continuous Data with Lower and Upper Bounds." Political Analysis. doi:10.1017/pan.2022.20.
+tmb2<-glmmTMB(Grubbing_Intensity~GoosePop_mean*VegetationType_reclassified +(1|Location_Valley),data=grubbingdat[grubbingdat$Grubbing_Intensity<1.0 & grubbingdat$Grubbing_Intensity>0 ,], family=ordbeta(link='logit'))
+summary(tmb2)
+
+tmb2_simres<-simulateResiduals(tmb2)
+plot(tmb2_simres) #Residuals are deviating
+Anova(tmb2)
+
+
+effs2<-allEffects(tmb2)
+effs2
+plot(effs2)
+
+ggpredict(tmb2, terms = c("GoosePop_mean",'VegetationType_reclassified',"Location_Valley"), type = "re") %>% plot()
+ggeffect(tmb2,terms = c("GoosePop_mean",'VegetationType_reclassified')) %>% plot()
+
+
