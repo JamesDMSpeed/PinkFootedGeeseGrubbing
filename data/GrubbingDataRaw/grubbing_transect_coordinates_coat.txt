@@ -1,0 +1,103 @@
+FID	site_id	point	comments	x_coord	y_coord
+0	bro-sim-1-mos-3	END	corrected to dgps accuracy	428242.7758	8767593.968
+1	bro-sim-1-mos-3	START	corrected to dgps accuracy	428248.851	8767623.973
+2	bro-stu-1-dry-1	END	corrected to dgps accuracy	429022.2596	8767580.822
+3	bro-stu-1-dry-1	START	corrected to dgps accuracy	429031.905	8767608.773
+4	adv-han-1-dry-2	START	handheld gps accuracy	514253.9445	8690063.254
+5	adv-han-1-mos-2	END	handheld gps accuracy	514294.7111	8690115.479
+6	adv-han-1-mos-2	START	handheld gps accuracy	514301.7257	8690146.136
+7	adv-han-1-dis-2	END	handheld gps accuracy	514331.3393	8690139.201
+8	adv-han-1-dis-2	START	handheld gps accuracy	514334.6214	8690169.036
+9	adv-han-1-mos-1	END	handheld gps accuracy	514593.0315	8690193.618
+10	adv-han-1-dry-1	END	handheld gps accuracy	514664.5809	8690076.212
+11	adv-han-1-dry-1	START	handheld gps accuracy	514665.6367	8690105.801
+12	adv-han-1-dis-1	END	handheld gps accuracy	514715.3583	8690185.036
+13	adv-han-1-dis-1	START	handheld gps accuracy	514715.6059	8690215.843
+14	adv-end-2-dry-1	END	corrected to dgps accuracy	517684.747	8680426.118
+15	adv-end-2-dry-1	START	corrected to dgps accuracy	517706.917	8680445.658
+16	adv-end-2-mos-1	END	corrected to dgps accuracy	517881.086	8680562.977
+17	adv-end-2-mos-1	START	corrected to dgps accuracy	517898.366	8680587.293
+18	adv-end-2-dis-1	END	corrected to dgps accuracy	517944.593	8680640.724
+19	adv-end-2-dis-1	START	corrected to dgps accuracy	517960.037	8680666.311
+20	adv-end-1-dry-2	END	handheld gps accuracy	518582	8679417
+21	adv-end-1-dry-2	START	handheld gps accuracy	518595	8679441
+22	adv-end-1-mos-1	END	corrected to dgps accuracy	518633.2496	8679619.191
+23	adv-end-1-mos-1	START	corrected to dgps accuracy	518643.7638	8679647.266
+24	adv-end-1-dry-1	END	corrected to dgps accuracy	518656.9818	8679390.609
+25	adv-end-1-dry-1	START	corrected to dgps accuracy	518671.7416	8679415.1
+26	adv-end-1-dis-1	START	corrected to dgps accuracy	518740.994	8679711.393
+27	adv-end-1-dis-1	END	corrected to dgps accuracy	518741.5053	8679681.475
+28	adv-end-1-mos-2	END	handheld gps accuracy	518992	8679929
+29	adv-end-1-mos-2	START	handheld gps accuracy	519004	8679958
+30	adv-end-1-dis-2	END	handheld gps accuracy	519063.5	8679885.7
+31	adv-end-1-dis-2	START	handheld gps accuracy	519092.5518	8679879.996
+32	adv-jan-2-dry-1	END	corrected to dgps accuracy	529738.241	8677865.949
+33	adv-jan-2-dry-1	START	corrected to dgps accuracy	529746.476	8677894.652
+34	adv-jan-2-mos-1	START	corrected to dgps accuracy	529864.586	8677917.909
+35	adv-jan-1-dry-2	START	corrected to dgps accuracy	529872.307	8677507.025
+36	adv-jan-1-dry-2	END	corrected to dgps accuracy	529870.26	8677536.725
+37	adv-jan-2-mos-1	END	corrected to dgps accuracy	529892.569	8677928.474
+38	adv-jan-1-dis-1	START	corrected to dgps accuracy	529968.059	8677453.527
+39	adv-jan-1-dis-1	END	corrected to dgps accuracy	529971.874	8677483.159
+40	adv-jan-1-dis-2	START	corrected to dgps accuracy	529973.953	8677370.982
+41	adv-jan-1-dis-2	END	corrected to dgps accuracy	529975.357	8677400.853
+42	adv-jan-1-mos-1	END	corrected to dgps accuracy	529981.216	8677678.228
+43	adv-jan-1-mos-1	START	corrected to dgps accuracy	529988.758	8677649.018
+44	adv-jan-1-mos-2	END	corrected to dgps accuracy	529992.113	8677532.074
+45	adv-jan-1-mos-2	START	corrected to dgps accuracy	529991.21	8677502.244
+46	sas-gje-1-dis-3	START	in 2020, sw to se was done	544228.588	8696991.292
+47	sas-gje-1-dry-3	START	corrected to dgps accuracy	544209.75	8697046.238
+48	sas-gje-1-dry-3	END	corrected to dgps accuracy	544214.881	8697074.636
+49	sas-gje-1-dis-3	END	in 2020, sw to se was done	544232.228	8697020.958
+50	sas-gje-1-mos-2	START	in 2020, sw to se was done	544383.998	8696893.877
+51	sas-gje-1-dis-2	START	corrected to dgps accuracy	544362.445	8696925.628
+52	sas-gje-1-dis-2	END	corrected to dgps accuracy	544371.887	8696954.049
+53	sas-gje-1-mos-2	END	in 2020, sw to se was done	544393.313	8696922.421
+54	sas-gje-1-dry-1	START	in 2020, sw to se was done	544666.791	8696761.973
+55	sas-gje-1-dry-1	END	in 2020, sw to se was done	544670.632	8696791.575
+56	sas-gje-2-dis-1	START	corrected to dgps accuracy	545009.152	8695538.58
+57	sas-gje-2-dis-1	END	corrected to dgps accuracy	545036.194	8695551.524
+58	sas-gje-2-dry-1	START	corrected to dgps accuracy	545047.336	8695630.766
+59	sas-gje-2-mos-1	START	in 2020, sw to se was done	545050.838	8695660.529
+60	sas-gje-2-mos-1	END	in 2020, sw to se was done	545080.759	8695660.462
+61	adv-jan-2-dis-1	END	from overview file	529818.309	8677929.594
+62	adv-jan-2-dis-1	START	from overview file	529790.196	8677939.867
+63	sas-gje-2-dry-1	END	corrected to dgps accuracy	545050.838	8695660.529
+64	sas-gje-1-mos-3	START	from dgps2019 file	544479.434	8696792.07
+65	sas-gje-1-mos-3	END	from dgps2019 file	544486.761	8696821.081
+66	sas-gje-1-dis-1	START	from dgps2019 file	544622.118	8696551.385
+67	sas-gje-1-dis-1	END	from dgps2019 file	544637.242	8696577.407
+68	sas-gje-1-mos-1	START	from dgps2019 file	544632.346	8696623.447
+69	sas-gje-1-mos-1	END	from dgps2019 file	544662.018	8696620.986
+70	bro-stu-1-dis-3	START	from overview file	427306.9747	8767703.326
+71	bro-stu-1-dis-3	END	from overview file	427336.218	8767697.765
+72	bro-stu-1-dis-1	START	from overview file	427338.073	8767644.187
+73	bro-stu-1-dis-1	END	from overview file	427366.6722	8767635.087
+74	bro-stu-1-dis-2	START	from overview file	427318.612	8767618.059
+75	bro-stu-1-dis-2	END	from overview file	427347.874	8767612.057
+76	bro-sim-1-mos-2	START	from overview file	425014.824	8761423.302
+77	bro-sim-1-mos-2	END	from overview file	425045.561	8761421.583
+78	bro-sim-1-dis-3	START	from overview file	425031.943	8761256.231
+79	bro-sim-1-dis-3	END	from overview file	425040.222	8761284.654
+80	bro-sim-1-dis-1	START	from overview file	425025.847	8761083.864
+81	bro-sim-1-dis-1	END	from overview file	425054.636	8761077.543
+82	bro-sim-1-mos-3	START	from overview file	424976.6154	8761065.969
+83	bro-sim-1-mos-3	END	from overview file	425004.835	8761055.917
+84	bro-sim-1-mos-1	START	from overview file	425095.038	8761113.032
+85	bro-sim-1-mos-1	END	from overview file	425097.788	8761142.916
+86	bro-sim-1-dis-2	START	from overview file	424962.636	8761253.013
+87	bro-sim-1-dis-2	END	from overview file	424986.76	8761236.382
+88	bro-stu-1-dry-3	START	from overview file	428214.252	8767959.694
+89	bro-stu-1-dry-3	END	from overview file	428243.209	8767952.134
+90	bro-stu-1-dry-2	START	from overview file	428428.677	8767847.187
+91	bro-stu-1-dry-2	END	from overview file	428457.5564	8767839.598
+92	bro-stu-1-mos-2	START	from overview file	428347.021	8767555.418
+93	bro-stu-1-mos-2	END	from overview file	428337.8938	8767527.503
+94	bro-stu-1-mos-1	START	from overview file	428531.816	8767463.448
+95	bro-stu-1mos-1	END	from overview file	428520.449	8767435.892
+96	adv-jan-1-dry-1	START	from dgps2019 file	529801.699	8677606.273
+97	adv-jan-1-dry-1	END	from dgps2019 file	529811.544	8677634.543
+98	sas-gje-1-dry-2	START	from dgps2019 file	544444.255	8696947.6
+99	sas-gje-1-dry-2	END	from dgps2019 file	544456.654	8696974.732
+100	adv-han-1-dry-2	END	estimation based on start gps point	514251.9249	8690034.844
+101	adv-han-1-mos-1	START	estimation based on start gps point	514590.5922	8690218.069
