@@ -10,10 +10,11 @@ library(DHARMa)
 library(glmmTMB)
 library(effects)
 library(ggeffects)
+library(cowplot)
 
 
 #Load in pre-wrangeld data
-grubbingdat<-read.csv("data/grubbing_plots_merged_prelim_2.csv",header=T)
+grubbingdat<-read.csv("data/grubbing_plots_merged_prelim_3.csv",header=T)
 grubbingdat<-grubbingdat[!is.na(grubbingdat$Year),]
 View(grubbingdat)
 
@@ -61,6 +62,7 @@ gLg<-ggplot(data=grubbingproportion,aes(x=GoosePop_mean,y=prop))+geom_point(data
   ylab("Grubbing Extent \n(proportion of observations grubbed)")+scale_x_continuous(limits=c(55,80))+
   xlab("Goose population")+theme_bw()+
   stat_smooth(data=grubbingproportion,method='lm',aes(lty=VegetationType_reclassified))
+
 gPg<-ggplot(data=grubbingintensity,aes(x=GoosePop_mean,y=meangrubint))+geom_point(data=grubbingintensity,aes(color=Location_Valley,pch=VegetationType_reclassified))+
   ylab("Grubbing Intensity \n(proportion of plot grubbed)")+theme_bw()+theme(legend.position='none')+
   stat_smooth(data=grubbingintensity,aes(lty=VegetationType_reclassified),method='lm')+scale_x_continuous(limits=c(55,80))
@@ -115,6 +117,24 @@ effs2
 plot(effs2)
 
 ggpredict(tmb2, terms = c("GoosePop_mean",'VegetationType_reclassified',"Location_Valley"), type = "re") %>% plot()
-ggeffect(tmb2,terms = c("GoosePop_mean",'VegetationType_reclassified')) %>% plot()
+ge2<-ggeffect(tmb2,terms = c("GoosePop_mean",'VegetationType_reclassified')) #%>% plot()
 
+#Adding model effects to the scatterplot
+gLg<-ggplot(data=grubbingproportion)+geom_point(data=grubbingproportion,aes(x=GoosePop_mean,y=prop,color=Location_Valley,pch=VegetationType_reclassified))+
+  ylab("Grubbing Extent \n(proportion of observations grubbed)")+scale_x_continuous(limits=c(55,80))+
+  xlab("Goose population")+theme_bw()+
+#  stat_smooth(data=grubbingproportion,method='lm',aes(lty=VegetationType_reclassified))+
+  geom_line(data=ge1,aes(x=x,y=predicted,lty=group))+
+  geom_ribbon(data=ge1,aes(x=x, ymin = conf.low , ymax = conf.high, group=group), alpha = 0.2) 
 
+gLg
+
+gPg<-ggplot(data=grubbingintensity)+geom_point(data=grubbingintensity,aes(x=GoosePop_mean,y=meangrubint,color=Location_Valley,pch=VegetationType_reclassified))+
+  ylab("Grubbing Intensity \n(proportion of plot grubbed)")+theme_bw()+theme(legend.position='none')+
+  #stat_smooth(data=grubbingintensity,aes(lty=VegetationType_reclassified),method='lm')+
+  scale_x_continuous(limits=c(55,80))+
+  geom_line(data=ge2,aes(x=x,y=predicted,lty=group))+
+  geom_ribbon(data=ge2,aes(x=x, ymin = conf.low , ymax = conf.high, group=group), alpha = 0.2) 
+gPg
+plot_grid(gLg,gPg,align="v",axis='lr',nrow=2)
+ggsave("Figures/Extent_Intensity_pop.png",height=10,width=8,units='in')
