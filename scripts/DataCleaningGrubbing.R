@@ -10,6 +10,7 @@
 
 library(tidyverse)
 library(sf)
+library(tidyr)
 
 ## RENE
 
@@ -121,13 +122,25 @@ transect_james<-transect_james %>%
 ## COAT PLOTS
 
 coat_grubbing_plot_2017_2022_ie <- read_csv("data/GrubbingDataRaw/coat_grubbing_plot_2017_2022_ie.csv")
+coat_grubbing_plot_2023<-read_table("data/GrubbingDataRaw/coat_sv_veg_2023_site_plots_grubbing_variable_to_IE_05102023.txt")
 
 pf_2022 <- read_delim("data/GrubbingDataRaw/coat_sv_veg_2022_site_plots.txt", delim = "\t", escape_double = FALSE,trim_ws = TRUE)
 coordinates_coat<-pf_2022 %>% select(site_id, gps_east, gps_north) %>% 
   unique()
 
+coat_plots_2023 <-coat_grubbing_plot_2023 %>% 
+  mutate(grubbing_cat = ifelse(is.na(grubbing_plot), "n", grubbing_plot)) %>%
+  mutate(Grubbing_Intensity= case_when(grubbing_cat == "n" ~ 0,
+                                       grubbing_cat == "p" ~ 0.05,
+                                       grubbing_cat == "b" ~ 0.25,
+                                       grubbing_cat == "c" ~ 0.75)) %>% 
+  mutate(grubbing_pa = ifelse((Grubbing_Intensity > 0), 1, 0)) %>% 
+  select(!Grubbing_Intensity) %>% 
+  select(!grubbing_plot)
 
-coat_plots <- coat_grubbing_plot_2017_2022_ie %>%  select(Year=year, Location_Valley = locality , Sublocation = section, Grubbing_PresenceAbsence=grubbing_pa, GrubbingType=grubbing_cat, VegetationType_as_provided = type_of_sites_ecological, site_id) %>% 
+
+coat_plots <- coat_grubbing_plot_2017_2022_ie %>%  bind_rows(coat_plots_2023) %>% 
+  select(Year=year, Location_Valley = locality , Sublocation = section, Grubbing_PresenceAbsence=grubbing_pa, GrubbingType=grubbing_cat, VegetationType_as_provided = type_of_sites_ecological, site_id) %>% 
   mutate(DataShepherd="Virve") %>% 
   mutate(SpatialScale_GrubbingRecording=0.25) %>% 
   mutate(Survey_type="plots") %>% 
@@ -148,13 +161,6 @@ coat_plots <- coat_grubbing_plot_2017_2022_ie %>%  select(Year=year, Location_Va
                                     Location_Valley == "alk" ~ "Alkhornet")) %>% 
   mutate(VegetationType_as_provided=as.factor(VegetationType_as_provided))
 
-#Add a dummy dataset for 2023
-coat_plots_2023 <- coat_plots %>% 
-  filter(Year==2022) %>% 
-  mutate(Year=2023) %>% 
-  bind_rows(coat_plots)
-
-coat_plots<-coat_plots_2023
 
 
 ## ÅSHILD TRANSECTS
@@ -239,7 +245,7 @@ virve_veg_2015<-vegetation_transect_virve_2015 %>%
                                                VegetationType_as_provided == "tundra_mire" ~ "mesic",
                                                VegetationType_as_provided == "wetland" ~ "wet")) %>% 
   mutate(DataShepherd="Virve") %>% 
-  mutate(SpatialScale_GrubbingRecording=0.25) %>% 
+  mutate(SpatialScale_GrubbingRecording=2) %>% 
   mutate(Survey_type="plots_on_transect") %>% 
   mutate(Location_Valley= case_when(Sublocation == "adventdalen" ~ "Adventdalen",
                                     Sublocation == "alkehornet" ~ "Alkhornet",
@@ -261,6 +267,33 @@ virve_veg_2015<-vegetation_transect_virve_2015 %>%
   mutate(Year=2015) %>% 
   drop_na(Grubbing_PresenceAbsence)
 
+## VIRVES 2015 PF
+
+virve_veginfo<- virve_veg_2015 %>% 
+  select(UTM_E, UTM_N, VegetationType_as_provided, VegetationType_reclassified, Location_Valley, DataShepherd) 
+
+point_frequency_2015 <- read_delim("data/GrubbingDataRaw/point_frequency_2015.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+
+virve_pf_2015<-point_frequency_2015 %>% 
+  select(UTM_E=coords.x1, UTM_N=coords.x2, Sublocation=locality, picking, bulldozing, plant_part) %>%
+  filter(plant_part=="veg") %>% 
+  mutate(UTM_E=as.numeric(UTM_E)) %>% 
+  mutate(UTM_N=as.numeric(UTM_N)) %>% 
+  left_join(virve_veginfo, join_by(UTM_E, UTM_N)) %>% 
+  drop_na(VegetationType_as_provided) %>% 
+  mutate(SpatialScale_GrubbingRecording=0.25) %>% 
+  mutate(Survey_type="plots") %>% 
+  mutate(picking = ifelse((picking > 0), 0.05, 0)) %>% 
+  mutate(bulldozing = ifelse((bulldozing > 0), 0.25, 0)) %>% 
+  rowwise() %>%
+  mutate(Grubbing_Intensity=max(picking,bulldozing)) %>% 
+  mutate(Grubbing_PresenceAbsence = ifelse((Grubbing_Intensity > 0), 1, 0)) %>% 
+  select(!(picking:bulldozing)) %>% 
+  mutate(Year=2015) %>% 
+  select(!plant_part)
+  
+
   
   
 ## VIRVE 2016 VEGETATION PLOTS
@@ -276,9 +309,9 @@ virve_veg_2016 <- plots_2016_grubbing_COAT_Virve_Ravolainen_14092023 %>%
                                     Sublocation == "engelsbukta" ~ "Brogger",
                                     Sublocation == "gaasebu" ~ "Brogger",
                                     Sublocation == "janssonhaugen" ~ "Adventdalen",
-                                    Sublocation == "simlestupet" ~ "Simlestupet",
+                                    Sublocation == "simlestupet" ~ "Brogger",
                                     Sublocation == "sassendalen" ~ "Sassendalen",
-                                    Sublocation == "trygghamna" ~ "Trygghamna")) %>% 
+                                    Sublocation == "trygghamna" ~ "Alkhornet")) %>% 
   mutate(DataShepherd="Virve") %>% 
   mutate(SpatialScale_GrubbingRecording=0.25) %>% 
   mutate(Survey_type="plots") %>% 
@@ -294,14 +327,20 @@ virve_veg_2016 <- plots_2016_grubbing_COAT_Virve_Ravolainen_14092023 %>%
 
 ## COAT TRANSECT
 masterfile_coat_grubbing_transect_2017_2022_ie <- read_csv("data/GrubbingDataRaw/masterfile_coat_grubbing_transect_2017_2022_ie.csv")
+ts_2023 <- read_delim("data/GrubbingDataRaw/coat_sv_grubbing_transects_2023.csv", delim = ",", escape_double = FALSE, trim_ws = TRUE)
 
 grubbing_transect_coordinates_coat <- read_delim("data/GrubbingDataRaw/grubbing_transect_coordinates_coat.txt", delim = "\t", escape_double = FALSE, trim_ws = TRUE)
 
+grubbing_transect_coordinates_coat <- grubbing_transect_coordinates_coat %>% filter(point=='START')
+
+
 coat_transect<- masterfile_coat_grubbing_transect_2017_2022_ie %>% 
-  distinct(year, site_id, .keep_all = T) %>% 
+  bind_rows(ts_2023) %>% 
+#  distinct(year, site_id, .keep_all = T) %>% 
   left_join(grubbing_transect_coordinates_coat) %>% 
-  select(Year=year, Location_Valley = locality , Sublocation = section, VegetationType_as_provided = type_of_sites_ecological, site_id, UTM_E=x_coord, UTM_N=y_coord) %>% 
+  select(Year=year, Location_Valley = locality , Sublocation = section, VegetationType_as_provided = type_of_sites_ecological, site_id, UTM_E=x_coord, UTM_N=y_coord, dist_from_start_cm, grubbing_pa, disturbance) %>% 
   mutate(DataShepherd="Virve") %>% 
+  filter((!Sublocation == 'bjo')) %>%
   mutate(VegetationType_reclassified= case_when(VegetationType_as_provided == "dis" ~ "mesic",
                                                 VegetationType_as_provided == "mos" ~ "mesic",
                                                 VegetationType_as_provided == "dry" ~ "dry")) %>% 
@@ -309,20 +348,28 @@ coat_transect<- masterfile_coat_grubbing_transect_2017_2022_ie %>%
                                     Location_Valley == "sas" ~ "Sassendalen",
                                     Location_Valley == "bro" ~ "Brogger",
                                     Location_Valley == "alk" ~ "Alkhornet")) %>% 
-  filter((!Sublocation == 'bjo')) %>% 
   select(!site_id) %>% 
-  drop_na(UTM_N)
+  drop_na(UTM_N) %>% 
+  drop_na(disturbance) %>% 
+  group_by(Year, Location_Valley, Sublocation, VegetationType_as_provided, UTM_E, UTM_N, VegetationType_reclassified) %>% 
+  summarise(Grubbing_Intensity=sum(grubbing_pa/3000)) %>%
+  mutate(Grubbing_PresenceAbsence = ifelse((Grubbing_Intensity > 0), 1, 0)) %>% 
+  mutate(SpatialScale_GrubbingRecording=0.3) %>% 
+  mutate(Survey_type="transect")
 
-#Add a dummy dataset for 2023
-coat_transect_2023 <- coat_transect %>% 
-  filter(Year==2022) %>% 
-  mutate(Year=2023) %>% 
-  bind_rows(coat_transect)
 
-coat_plots<-coat_plots_2023
 
 ## JESPER TRANSECT
 transect_jesper_temp <- read_delim("data/GrubbingDataRaw/transect_jesper_temp.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+jesper_transect_grubbing <- read_delim("data/GrubbingDataRaw/jesper_transect_grubbing.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+jesper_transect_length <- read_delim("data/GrubbingDataRaw/jesper_transect_length.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+jesper_all_locations <- read_delim("data/GrubbingDataRaw/jesper_all_locations.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+extra<-data.frame("Gaset5", 2022, 0, 24.0)
+names(extra)<-c("Plot_Nr","Year", "Grubbing_Intensity", "Length")
 
 transect_jesper <- transect_jesper_temp %>% 
 st_as_sf(coords = c("UTM_E", "UTM_N"), crs = 4326) %>% 
@@ -330,18 +377,36 @@ st_as_sf(coords = c("UTM_E", "UTM_N"), crs = 4326) %>%
   dplyr::mutate(UTM_E = sf::st_coordinates(.)[,1],
                 UTM_N= sf::st_coordinates(.)[,2]) %>% st_drop_geometry()
 
+jesper_transect<-jesper_transect_grubbing %>% 
+  drop_na(start_cm_of_grub) %>% 
+  mutate(grubbing = (end_cm_of_grub - start_cm_of_grub)+0.01) %>%
+  group_by(Plot_Nr, Year) %>% 
+  summarise(Grubbing_Intensity=sum(grubbing)) %>% 
+  ungroup() %>% 
+  left_join(jesper_transect_length) %>% 
+  mutate(Grubbing_Intensity=Grubbing_Intensity/Length) %>% 
+  bind_rows(extra) %>% 
+  mutate(SpatialScale_GrubbingRecording=Length/100) %>% 
+  mutate(Grubbing_PresenceAbsence = ifelse((Grubbing_Intensity > 0), 1, 0)) %>% 
+  mutate(Survey_type="transect") %>% 
+  mutate(DataShepherd="Jesper") %>%
+  select(-Length) %>% 
+  mutate(VegetationType_reclassified="wet") %>% 
+  select(-Plot_Nr)
+
 
 
 
 ## Bind grubbing datasets together and save
 
-snow_coordinates<-bind_rows(plots_rene, transect_james, coat_plots, transect_ashild, virve_veg_2015, virve_veg_2016, transect_jesper, coat_transect) %>% 
-  drop_na(Location_Valley) %>% drop_na(UTM_E) %>% 
-  distinct(Year, UTM_N, UTM_E, .keep_all = T) %>% 
-  select(Year, UTM_E, UTM_N, Location_Valley) %>% 
-  rowid_to_column("ID")
+#snow_coordinates<-bind_rows(plots_rene, transect_james, coat_plots, transect_ashild, virve_veg_2015, virve_veg_2016, transect_jesper, coat_transect) %>% 
+#  drop_na(Location_Valley) %>% drop_na(UTM_E) %>% 
+#  distinct(Year, UTM_N, UTM_E, .keep_all = T) %>% 
+#  select(Year, UTM_E, UTM_N, Location_Valley) %>% 
+#  rowid_to_column("ID")
 
-write_csv(snow_coordinates, file = "data/snow_coordinates.csv")
+#write_csv(snow_coordinates, file = "data/snow_coordinates.csv")
+
 
 
 
@@ -365,12 +430,63 @@ weather_match<-as.data.frame(cbind(Location_Valley, station_name))
 
 may_positive_days<-left_join(may_temp, weather_match) %>% rename(Year=year)
 
+snow_coordinates <- read_csv("data/snow_coordinates.csv")
+
+
+## Snowfree days
+SM_snowfree_DOY <- read_csv("data/SM_snowfree_DOY_points_2005-2021.csv", col_names=FALSE)
+
+snowmelt <-SM_snowfree_DOY %>% 
+  column_to_rownames("X1") %>% 
+  t %>% 
+  as.data.frame %>% 
+  rownames_to_column("ID_old") %>% 
+  bind_cols(snow_coordinates) %>% 
+  select(-ID_old) %>% 
+  pivot_longer('2005':'2021', names_to = "Year_pivot", values_to = "snowmelt") %>% 
+  mutate(Year_diff=Year-as.numeric(Year_pivot)) %>% 
+  filter(Year_diff==0) %>% 
+  filter(snowmelt>0) %>% 
+  select(ID, Year, UTM_E, UTM_N,snowmelt) %>% 
+  mutate(across(where(is.numeric), round, 2))   ##needed to round coordinates for join to work
+
+##Tair
+SM_tair <- read_csv("data/SM_tair_points_MJJ_2005-2021.csv", col_names=FALSE) 
+
+air<-SM_tair%>% 
+  filter(X2==5) %>% 
+  pivot_longer(X4:X28640, names_to = "ID_old", values_to = "temp") %>% 
+  mutate(temp =na_if(temp, -9999)) %>% 
+  group_by(X1,ID_old) %>% 
+  summarise(positive=sum(temp>0)) %>% 
+  pivot_wider(names_from = "X1", values_from = "positive") %>% 
+  mutate(across(c('ID_old'), substr, 2, nchar(ID_old))) %>% 
+  mutate(ID=as.numeric(ID_old)) %>% 
+  mutate(ID=ID-3) %>% 
+  select(!ID_old) %>% 
+  pivot_longer('2005':'2021', names_to = "Year", values_to = "mayday") %>% 
+  mutate(Year=as.numeric(Year)) 
+
+
+may_positive_days_model<-snow_coordinates %>% 
+  left_join(air) %>% 
+  mutate(across(where(is.numeric), round, 2))
+
+
+
 ## Add all files and merge with environmental data
-grubberson<-bind_rows(plots_rene, transect_james, coat_plots, transect_ashild, virve_veg_2015, virve_veg_2016) %>% 
-  drop_na(Location_Valley) %>% drop_na(UTM_E) %>% 
-  left_join(may_positive_days) %>% 
+grubberson<-bind_rows(plots_rene, transect_james, coat_plots, transect_ashild, virve_veg_2015, virve_veg_2016, virve_pf_2015, coat_transect, jesper_transect) %>% 
+  drop_na(Location_Valley) %>% drop_na(UTM_E) %>%
+  mutate(across(where(is.numeric), round, 2)) %>% 
+  left_join(snowmelt, join_by(Year, UTM_E, UTM_N)) %>% 
+  left_join(may_positive_days_model, join_by(Year, UTM_E, UTM_N)) %>% 
   select(!UTMZone) %>% 
-  select(!GrubbingType)
+  select(!GrubbingType) %>% 
+  select(!(ID.x)) %>% 
+  select(!(ID.y)) %>% 
+  mutate(Location_Valley=Location_Valley.x) %>% 
+  select(!(Location_Valley.x)) %>% 
+  select(!(Location_Valley.y))
 
 
 ## Export merged file

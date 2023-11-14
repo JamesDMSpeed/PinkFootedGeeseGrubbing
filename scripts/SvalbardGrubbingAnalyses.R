@@ -14,7 +14,9 @@ library(cowplot)
 
 
 #Load in pre-wrangeld data
-grubbingdat<-read.csv("data/grubbing_plots_merged_prelim_3.csv",header=T)
+#grubbingdat<-read.csv("data/grubbing_plots_merged_prelim_3.csv",header=T)
+grubbingdat<-read.csv("data/grubbing_plots_merged.csv",header=T)
+
 grubbingdat<-grubbingdat[!is.na(grubbingdat$Year),]
 View(grubbingdat)
 
@@ -75,7 +77,7 @@ plot_grid(gLg,gPg,align="v",axis='lr',nrow=2)
 #Binomial logitlink
 #Fitting offset against plot size, random slope (on goose pop) and intercept for valleys. No zero inflation. 
 
-tmb1<-glmmTMB(Grubbing_PresenceAbsence~GoosePop_mean*VegetationType_reclassified + offset(SpatialScale_GrubbingRecording)+(1|Location_Valley)+(GoosePop_mean|Location_Valley), data=grubbingdat, ziformula=~0, family=binomial(link='logit'))
+tmb1<-glmmTMB(Grubbing_PresenceAbsence~GoosePop_mean*VegetationType_reclassified + offset(SpatialScale_GrubbingRecording)+(1|Location_Valley)+(GoosePop_mean|Location_Valley), data=grubbingdat,  family=binomial(link='logit'), ziformula=~0,)
 summary(tmb1)
 
 #Evaluation and visualisation
@@ -123,6 +125,7 @@ ge2<-ggeffect(tmb2,terms = c("GoosePop_mean",'VegetationType_reclassified')) #%>
 gLg<-ggplot(data=grubbingproportion)+geom_point(data=grubbingproportion,aes(x=GoosePop_mean,y=prop,color=Location_Valley,pch=VegetationType_reclassified))+
   ylab("Grubbing Extent \n(proportion of observations grubbed)")+scale_x_continuous(limits=c(55,80))+
   xlab("Goose population")+theme_bw()+
+  theme(legend.key.height = unit(0.3, 'cm'))+
 #  stat_smooth(data=grubbingproportion,method='lm',aes(lty=VegetationType_reclassified))+
   geom_line(data=ge1,aes(x=x,y=predicted,lty=group))+
   geom_ribbon(data=ge1,aes(x=x, ymin = conf.low , ymax = conf.high, group=group), alpha = 0.2) 
