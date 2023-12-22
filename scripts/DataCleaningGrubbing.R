@@ -354,7 +354,7 @@ coat_transect<- masterfile_coat_grubbing_transect_2017_2022_ie %>%
   group_by(Year, Location_Valley, Sublocation, VegetationType_as_provided, UTM_E, UTM_N, VegetationType_reclassified) %>% 
   summarise(Grubbing_Intensity=sum(grubbing_pa/3000)) %>%
   mutate(Grubbing_PresenceAbsence = ifelse((Grubbing_Intensity > 0), 1, 0)) %>% 
-  mutate(SpatialScale_GrubbingRecording=0.3) %>% 
+  mutate(SpatialScale_GrubbingRecording=0.6) %>% 
   mutate(Survey_type="transect")
 
 
@@ -386,12 +386,12 @@ jesper_transect<-jesper_transect_grubbing %>%
   left_join(jesper_transect_length) %>% 
   mutate(Grubbing_Intensity=Grubbing_Intensity/Length) %>% 
   bind_rows(extra) %>% 
-  mutate(SpatialScale_GrubbingRecording=Length/100) %>% 
+  mutate(SpatialScale_GrubbingRecording=Length/50) %>% 
   mutate(Grubbing_PresenceAbsence = ifelse((Grubbing_Intensity > 0), 1, 0)) %>% 
   mutate(Survey_type="transect") %>% 
   mutate(DataShepherd="Jesper") %>%
   select(-Length) %>% 
-  mutate(VegetationType_reclassified="wet") %>% 
+  mutate(VegetationType_reclassified="mesic") %>% 
   select(-Plot_Nr)
 
 
@@ -434,7 +434,21 @@ snow_coordinates <- read_csv("data/snow_coordinates.csv")
 
 
 ## Snowfree days
+### Main file
 SM_snowfree_DOY <- read_csv("data/SM_snowfree_DOY_points_2005-2021.csv", col_names=FALSE)
+
+### Brøgger addition
+SM_snowfree_DOY_B <- read_csv("data/SM_snowfree_DOY_points_2014-2021.csv", col_names=FALSE)
+snowmelt_brogger <- read_csv("data/snowmelt_brogger.csv", col_names=TRUE)
+
+snowmelt_b<- SM_snowfree_DOY_B %>% 
+  column_to_rownames("X1") %>% 
+  t %>% 
+  bind_cols(snowmelt_brogger) %>% 
+  pivot_longer('2014':'2021', names_to = "Year", values_to = "snowmelt") %>% 
+  mutate(across(c('UTM_E', 'UTM_N'), round, 2)) %>% 
+  mutate(Year=as.numeric(Year))
+
 
 snowmelt <-SM_snowfree_DOY %>% 
   column_to_rownames("X1") %>% 
@@ -445,14 +459,38 @@ snowmelt <-SM_snowfree_DOY %>%
   select(-ID_old) %>% 
   pivot_longer('2005':'2021', names_to = "Year_pivot", values_to = "snowmelt") %>% 
   mutate(Year_diff=Year-as.numeric(Year_pivot)) %>% 
-  filter(Year_diff==0) %>% 
+  filter(Year_diff==0)%>% 
   filter(snowmelt>0) %>% 
   select(ID, Year, UTM_E, UTM_N,snowmelt) %>% 
-  mutate(across(where(is.numeric), round, 2))   ##needed to round coordinates for join to work
+  mutate(across(where(is.numeric), round, 2)) %>% ##needed to round coordinates for join to work
+  bind_rows(snowmelt_b) %>% 
+  filter(snowmelt>0)
+
 
 ##Tair
 SM_tair <- read_csv("data/SM_tair_points_MJJ_2005-2021.csv", col_names=FALSE) 
+SM_tair_B <- read_csv("data/SM_tair_points_MJJ_2014-2021.csv", col_names=FALSE) 
 
+
+air_B<-SM_tair_B%>% 
+  filter(X2==5) %>% 
+  pivot_longer(X4:X7064, names_to = "ID_old", values_to = "temp") %>% 
+  mutate(temp =na_if(temp, -9999)) %>% 
+  group_by(X1,ID_old) %>% 
+  summarise(positive=sum(temp>0)) %>% 
+  pivot_wider(names_from = "X1", values_from = "positive") %>% 
+  mutate(across(c('ID_old'), substr, 2, nchar(ID_old))) %>% 
+  mutate(ID=as.numeric(ID_old)) %>% 
+  mutate(ID=ID-3) %>% 
+  select(!ID_old) %>% 
+  pivot_longer('2014':'2021', names_to = "Year", values_to = "mayday") %>% 
+  mutate(Year=as.numeric(Year)) 
+
+may_positive_days_model_B<-snowmelt_brogger %>% 
+  left_join(air_B) %>% 
+  mutate(across(where(is.numeric), round, 2))
+  
+  
 air<-SM_tair%>% 
   filter(X2==5) %>% 
   pivot_longer(X4:X28640, names_to = "ID_old", values_to = "temp") %>% 
@@ -470,7 +508,12 @@ air<-SM_tair%>%
 
 may_positive_days_model<-snow_coordinates %>% 
   left_join(air) %>% 
-  mutate(across(where(is.numeric), round, 2))
+  mutate(across(where(is.numeric), round, 2)) %>% 
+  bind_rows(may_positive_days_model_B) %>% 
+  filter(mayday>-1)
+
+
+
 
 
 
@@ -493,5 +536,26 @@ grubberson<-bind_rows(plots_rene, transect_james, coat_plots, transect_ashild, v
 write_csv(grubberson, file = "data/grubbing_plots_merged.csv")
 
 
+### Exporting snow variables for Brøgger
+snowmelt_brogger <-SM_snowfree_DOY %>% 
+  column_to_rownames("X1") %>% 
+  t %>% 
+  as.data.frame %>% 
+  rownames_to_column("ID_old") %>% 
+  bind_cols(snow_coordinates) %>% 
+  select(-ID_old) %>% 
+  pivot_longer('2005':'2021', names_to = "Year_pivot", values_to = "snowmelt") %>% 
+  mutate(Year_diff=Year-as.numeric(Year_pivot)) %>% 
+  filter(Year_diff==0) %>% 
+  filter(snowmelt<0) %>% 
+  distinct(UTM_E, UTM_N, .keep_all= TRUE) %>% 
+  select(UTM_E, UTM_N) %>% 
+  rowid_to_column("ID")
+   
+write_csv(snowmelt_brogger, file = "data/snowmelt_brogger.csv")
+
+
+
+  
 
 
