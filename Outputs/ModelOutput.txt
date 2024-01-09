@@ -1,0 +1,86 @@
+[1] "Prevalence model - Wald tests"
+Analysis of Deviance Table (Type II Wald chisquare tests)
+
+Response: Grubbing_PresenceAbsence
+                                            Chisq Df Pr(>Chisq)    
+GoosePop_mean                             338.094  1  < 2.2e-16 ***
+VegetationType_reclassified               566.712  2  < 2.2e-16 ***
+snowmelt                                   19.446  1  1.035e-05 ***
+GoosePop_mean:VegetationType_reclassified  14.179  2  0.0008338 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+[1] "Prevalence model - Model summary"
+ Family: binomial  ( logit )
+Formula:          Grubbing_PresenceAbsence ~ GoosePop_mean * VegetationType_reclassified +  
+    snowmelt + offset(SpatialScale_GrubbingRecording) + (1 |      Location_Valley)
+Data: grubbingdatmod
+
+     AIC      BIC   logLik deviance df.resid 
+ 10687.5  10745.1  -5335.7  10671.5     9880 
+
+Random effects:
+
+Conditional model:
+ Groups          Name        Variance Std.Dev.
+ Location_Valley (Intercept) 2.278    1.509   
+Number of obs: 9888, groups:  Location_Valley, 10
+
+Conditional model:
+                                                Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                                    -7.705105   0.751189 -10.257  < 2e-16 ***
+GoosePop_mean                                   0.105063   0.007520  13.970  < 2e-16 ***
+VegetationType_reclassifiedmesic                2.202340   0.649520   3.391 0.000697 ***
+VegetationType_reclassifiedwet                  4.442649   0.786989   5.645 1.65e-08 ***
+snowmelt                                       -0.008136   0.001845  -4.410 1.03e-05 ***
+GoosePop_mean:VegetationType_reclassifiedmesic -0.014542   0.009372  -1.552 0.120738    
+GoosePop_mean:VegetationType_reclassifiedwet   -0.044107   0.011717  -3.764 0.000167 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+[1] "Intensity model - Wald tests - remove snowmelt"
+Analysis of Deviance Table (Type II Wald chisquare tests)
+
+Response: Grubbing_Intensity
+                                             Chisq Df Pr(>Chisq)    
+GoosePop_mean                              13.4162  1  0.0002495 ***
+VegetationType_reclassified               285.1784  2  < 2.2e-16 ***
+snowmelt                                    2.5869  1  0.1077538    
+GoosePop_mean:VegetationType_reclassified  22.2263  2  1.492e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+[1] "Intensity model - Wald tests after snowmelt removed"
+Analysis of Deviance Table (Type II Wald chisquare tests)
+
+Response: Grubbing_Intensity
+                                            Chisq Df Pr(>Chisq)    
+GoosePop_mean                              49.790  1  1.711e-12 ***
+VegetationType_reclassified               335.044  2  < 2.2e-16 ***
+GoosePop_mean:VegetationType_reclassified  40.642  2  1.495e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+[1] "Intensity model - Model summary"
+ Family: ordbeta  ( logit )
+Formula:          Grubbing_Intensity ~ GoosePop_mean * VegetationType_reclassified +      (1 | Location_Valley)
+Data: grubbingdatmod[grubbingdatmod$Grubbing_Intensity < 1 & grubbingdatmod$Grubbing_Intensity >      0, ]
+
+     AIC      BIC   logLik deviance df.resid 
+ -6541.3  -6479.2   3280.7  -6561.3     3676 
+
+Random effects:
+
+Conditional model:
+ Groups          Name        Variance Std.Dev.
+ Location_Valley (Intercept) 0.02631  0.1622  
+Number of obs: 3686, groups:  Location_Valley, 7
+
+Dispersion parameter for ordbeta family (): 6.11 
+
+Conditional model:
+                                                Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                                    -4.648288   0.378204 -12.290  < 2e-16 ***
+GoosePop_mean                                   0.041927   0.005411   7.748 9.30e-15 ***
+VegetationType_reclassifiedmesic                0.994895   0.424288   2.345   0.0190 *  
+VegetationType_reclassifiedwet                  3.822122   0.494429   7.730 1.07e-14 ***
+GoosePop_mean:VegetationType_reclassifiedmesic -0.013915   0.006185  -2.250   0.0245 *  
+GoosePop_mean:VegetationType_reclassifiedwet   -0.046081   0.007366  -6.256 3.95e-10 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

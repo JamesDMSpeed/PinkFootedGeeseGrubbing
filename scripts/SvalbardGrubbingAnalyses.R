@@ -158,3 +158,19 @@ gPg
 plot_grid(gLg,gPg,align="v",axis='lr',nrow=2)
 
 ggsave("Figures/Extent_Intensity_pop.png",height=10,width=8,units='in')
+
+#Write outputs to file
+
+sink("Outputs/ModelOutput.txt")
+  print("Prevalence model - Wald tests")
+  print(Anova(tmb1b))
+  print("Prevalence model - Model summary")
+  print(summary(tmb1b))
+  print("Intensity model - Wald tests - remove snowmelt")
+  print(Anova(tmb2b))
+  print("Intensity model - Wald tests after snowmelt removed")
+  print(Anova(tmb2))
+  print("Intensity model - Model summary")
+  print(summary(tmb2))
+sink()  # returns output to the console
+
