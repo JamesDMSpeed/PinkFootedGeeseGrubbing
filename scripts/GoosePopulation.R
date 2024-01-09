@@ -24,3 +24,15 @@ ggplot(data=goosepopdat1,aes(x=year,y=mean))+geom_line()+
 
 write.csv(goosepopdat1,"data/goosepop_simple.csv")  
   
+
+#Including older counts
+oldcounts<-read.table("data/population_pink_feet.txt",header=T)
+ggplot()+geom_line(data=goosepopdat1,aes(x=year,y=mean))+
+  geom_ribbon(data=goosepopdat1,aes(x=year,y = mean, ymin = mean - sd, ymax = mean + sd), alpha = .2)+
+  theme_bw()+scale_y_continuous(limits=c(0,90),breaks=seq(0,90,by=10),labels=seq(0,90000,by=10000))+
+  xlab("Year")+ylab("Population")+
+  geom_line(data=oldcounts,aes(x=year,y=N/1000),color="darkgrey")+
+  geom_vline(xintercept=2013)+
+  geom_vline(xintercept=2006,lty=2)+
+  geom_segment(aes(x=2013,xend=2023,y=60,yend=60),lwd=2,color='red')
+
