@@ -109,6 +109,7 @@ ggeffect(tmb1b, terms = c("GoosePop_mean",'VegetationType_reclassified')) %>% pl
 
 ge1<-ggeffect(tmb1b, terms = c("GoosePop_mean",'VegetationType_reclassified'))
   #geom_point(data=grubbingproportion,aes(x=GoosePop_mean,y=prop*100))
+ggpredict(tmb1b,terms=c("GoosePop_mean [57, 79]","VegetationType_reclassified"))
 
 #Intensity
 #No offset? 
@@ -133,6 +134,7 @@ plot(effs2)
 
 ggpredict(tmb2, terms = c("GoosePop_mean",'VegetationType_reclassified',"Location_Valley"), type = "re") %>% plot()
 ge2<-ggeffect(tmb2,terms = c("GoosePop_mean",'VegetationType_reclassified')) #%>% plot()
+ggpredict(tmb2,terms=c("GoosePop_mean [57, 79]","VegetationType_reclassified"))
 
 #Adding model effects to the scatterplot
 gLg<-ggplot(data=grubbingproportion)+geom_point(data=grubbingproportion,aes(x=GoosePop_mean,y=prop,color=Location_Valley,pch=VegetationType_reclassified))+
