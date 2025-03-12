@@ -109,7 +109,7 @@ ggeffect(tmb1b, terms = c("GoosePop_mean",'VegetationType_reclassified')) %>% pl
 
 ge1<-ggeffect(tmb1b, terms = c("GoosePop_mean",'VegetationType_reclassified'))
   #geom_point(data=grubbingproportion,aes(x=GoosePop_mean,y=prop*100))
-ggpredict(tmb1b,terms=c("GoosePop_mean [57, 79]","VegetationType_reclassified"))
+ggpredict(tmb1b,terms=c("GoosePop_mean [56, 79]","VegetationType_reclassified"))
 
 #Intensity
 #No offset? 
@@ -134,7 +134,7 @@ plot(effs2)
 
 ggpredict(tmb2, terms = c("GoosePop_mean",'VegetationType_reclassified',"Location_Valley"), type = "re") %>% plot()
 ge2<-ggeffect(tmb2,terms = c("GoosePop_mean",'VegetationType_reclassified')) #%>% plot()
-ggpredict(tmb2,terms=c("GoosePop_mean [57, 79]","VegetationType_reclassified"))
+ggpredict(tmb2,terms=c("GoosePop_mean [56, 79]","VegetationType_reclassified"))
 
 #Adding model effects to the scatterplot
 gLg<-ggplot(data=grubbingproportion)+geom_point(data=grubbingproportion,aes(x=GoosePop_mean,y=prop,color=Location_Valley,pch=VegetationType_reclassified))+
@@ -154,7 +154,7 @@ gPg<-ggplot(data=grubbingintensity)+geom_point(data=grubbingintensity[!is.na(gru
   geom_line(data=ge2,aes(x=x,y=predicted,lty=group))+
   geom_ribbon(data=ge2,aes(x=x, ymin = conf.low , ymax = conf.high, group=group), alpha = 0.2) +
   theme(legend.key.height = unit(0.3, 'cm'))+
-  labs(shape="Vegetation",colour="Valley",linetype="Vegetation")
+  labs(shape="Habitat",colour="Valley",linetype="Habitat")
 gPg
 
 plot_grid(gLg,gPg,align="v",axis='lr',nrow=2)
